@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Gaming Tournament</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Dark Theme Variables --- */
+        :root {
+            --primary-bg: #0F172A; /* Slate 900 */
+            --secondary-bg: #1E293B; /* Slate 800 */
+            --card-bg: #1E293B; /* Slate 800 */
+            --sidebar-bg: #111827; /* Gray 900 */
+            --text-primary: #E2E8F0; /* Slate 200 */
+            --text-secondary: #94A3B8; /* Slate 400 */
+            --text-muted-custom: #64748B; /* Slate 500 - Improved visibility for muted text */
+            --accent-color: #FACC15; /* Yellow 500 */
+            --accent-gradient: linear-gradient(to right, #FACC15, #FBBF24);
+            --primary-button-bg: #3B82F6; /* Blue 500 */
+            --border-color: #334155; /* Slate 700 */
+            --success-color: #10B981; /* Emerald 500 */
+            --danger-color: #EF4444; /* Red 500 */
+            --warning-color: #F59E0B; /* Amber 500 */
+            --info-color: #60A5FA; /* Blue 400 */
+            --link-color: #9CA3AF; /* Gray 400 */
+            --link-hover-color: #E5E7EB; /* Gray 200 */
+            --placeholder-bg: rgba(100, 116, 139, 0.15); /* Slate 500 with opacity */
+        }
+        body { background-color: var(--primary-bg); color: var(--text-primary); font-family: 'Poppins', sans-serif; padding-top: 60px; }
+        .app-header { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background-color: var(--secondary-bg); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); z-index: 1030; border-bottom: 1px solid var(--border-color);}
+        .header-left { display: flex; align-items: center; gap: 10px;}
+        .menu-toggle-btn { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; padding: 0 5px; margin-left: -5px;}
+        .header-logo { width: 35px; height: 35px; border-radius: 50%; background-color: #fff; object-fit: cover; border: 1px solid var(--accent-color);}
+        .header-title { font-size: 1rem; font-weight: 600; line-height: 1.2;}
+        .header-right { display: flex; align-items: center; gap: 15px;}
+        .admin-email-header { font-size: 0.8rem; color: var(--text-secondary); display: none; }
+        @media (min-width: 576px) { .admin-email-header { display: inline; } }
+        .offcanvas-start { background-color: var(--sidebar-bg); color: var(--link-color); width: 260px !important; border-right: 1px solid var(--border-color);}
+        .offcanvas-header { border-bottom: 1px solid var(--border-color); padding: 1rem 1.2rem;}
+        .offcanvas-title h5 { color: var(--text-primary); margin-bottom: 0; font-size: 1.1rem; }
+        .btn-close-white { filter: invert(1) grayscale(100%) brightness(200%);}
+        .offcanvas-body { padding: 0; display: flex; flex-direction: column; height: calc(100% - 56px); }
+        .offcanvas-body .nav { flex-grow: 1; overflow-y: auto; }
+        .offcanvas-body .nav-link { color: var(--link-color); padding: 0.8rem 1.2rem; border-left: 3px solid transparent; font-size: 0.95rem;}
+        .offcanvas-body .nav-link.active, .offcanvas-body .nav-link:hover { color: var(--link-hover-color); background-color: rgba(255, 255, 255, 0.05); border-left-color: var(--accent-color);}
+        .offcanvas-body .nav-link i { margin-right: 12px; width: 20px; text-align: center; font-size: 1.1rem;}
+        .offcanvas-logout-btn { margin: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;}
+        .main-content { padding: 20px; }
+        .section { display: none; animation: fadeIn 0.5s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+        .login-container { max-width: 400px; margin: 10vh auto; background-color: var(--secondary-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+        #adminLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; display: none; }
+        .spinner-border { color: var(--accent-color); }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary); margin-bottom: 1.5rem; }
+        .card-title { color: var(--text-primary); }
+        .table-responsive { overflow-x: auto; }
+        .table { background-color: var(--card-bg); color: var(--text-primary); border-color: var(--border-color); margin-bottom: 0;}
+        .table > :not(caption) > * > * { background-color: transparent !important; border-bottom-color: var(--border-color); }
+        .table th { color: var(--text-secondary); font-weight: 500; white-space: nowrap; padding: 0.8rem 1rem;}
+        .table td { vertical-align: middle; white-space: nowrap; padding: 0.7rem 1rem;}
+        /* --- Improved Visibility for Muted Text in Tables --- */
+        .table td .text-muted { color: var(--text-muted-custom) !important; }
+        .table td small.text-muted { font-size: 0.85em; } /* Ensure small muted text is readable */
+        .table-hover > tbody > tr:hover > * { background-color: rgba(255, 255, 255, 0.03) !important; color: var(--text-primary); } /* Subtle hover */
+        .action-buttons button, .action-buttons a { margin-right: 5px; margin-bottom: 5px; }
+        .modal-content { background-color: var(--secondary-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .modal-header { border-bottom-color: var(--border-color); }
+        .modal-footer { border-top-color: var(--border-color); }
+        .modal-body label { margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); }
+        .form-control, .form-select { background-color: var(--primary-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .form-control:focus, .form-select:focus { background-color: var(--primary-bg); color: var(--text-primary); border-color: var(--accent-color); box-shadow: 0 0 0 0.2rem rgba(250, 204, 21, 0.25); }
+        .form-control::placeholder { color: var(--text-secondary); opacity: 0.7; }
+        .form-control:disabled, .form-select:disabled { background-color: #2d3748; opacity: 0.7; } /* Disabled state */
+        .form-control[type="file"] { background-color: var(--primary-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .imgbb-upload-status { display: none; margin-top: 5px; font-size: 0.85rem; color: var(--text-secondary);}
+        .table img.preview-img { max-width: 60px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid var(--border-color); }
+        .text-bg-primary { background-color: #3B82F6 !important; }
+        .text-bg-info { background-color: #0ea5e9 !important; }
+        .text-bg-warning { background-color: #f59e0b !important; }
+        .text-bg-success { background-color: #10b981 !important; }
+        .text-bg-danger { background-color: #ef4444 !important; }
+        .text-bg-secondary { background-color: #6b7280 !important; } /* Gray 500 */
+        .text-bg-dark { background-color: #374151 !important; } /* Gray 700 - For Rejected Withdrawals */
+        .nav-tabs .nav-link { color: var(--text-secondary); border-color: var(--border-color); border-bottom-color: transparent; margin-bottom: -1px;}
+        .nav-tabs .nav-link.active { color: var(--accent-color); background-color: var(--card-bg); border-color: var(--border-color); border-bottom-color: var(--card-bg); font-weight: 600; }
+        .nav-tabs { border-bottom-color: var(--border-color); }
+        textarea.form-control { min-height: 120px; }
+        .copy-btn { cursor: pointer; opacity: 0.6; transition: opacity 0.2s; }
+        .copy-btn:hover { opacity: 1; }
+        .status-badge { font-size: 0.8em; padding: 0.3em 0.6em; border-radius: 0.25rem; }
+        .loading-placeholder td > div { background-color: var(--placeholder-bg); border-radius: 4px; min-height: 1.2em; animation: placeholder-glow 2s ease-in-out infinite; }
+        @keyframes placeholder-glow { 0% { background-color: var(--placeholder-bg); } 50% { background-color: rgba(100, 116, 139, 0.2); } 100% { background-color: var(--placeholder-bg); } }
+        /* Dashboard card icons */
+        .dash-card-icon { font-size: 1.8rem; opacity: 0.6; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); }
+        .card-body { position: relative; } /* Needed for absolute positioning of icon */
+    </style>
+</head>
+<body>
+
+    <div id="adminLoader">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+
+    <!-- Login / Setup Area -->
+    <div id="auth-container">
+        <div id="admin-setup-section" style="display: none;">
+            <div class="container login-container"> <div class="card shadow"> <div class="card-body p-4"> <h2 class="card-title text-center mb-4">Admin Account Setup</h2> <p class="text-muted text-center small mb-3">Create the primary admin account.</p> <form id="adminSetupForm"> <div class="mb-3"> <label for="setupEmail" class="form-label">Admin Email</label> <input type="email" class="form-control" id="setupEmail" required> </div> <div class="mb-3"> <label for="setupPassword" class="form-label">Admin Password (min 6 chars)</label> <input type="password" class="form-control" id="setupPassword" required minlength="6"> </div> <div id="adminSetupStatus" class="mt-3"></div> <div class="d-grid"> <button type="submit" class="btn btn-success">Create Admin Account</button> </div> </form> </div> </div> </div>
+        </div>
+        <div id="admin-login-section" style="display: none;">
+            <div class="container login-container"> <div class="card shadow"> <div class="card-body p-4"> <h2 class="card-title text-center mb-4">Admin Login</h2> <form id="adminLoginForm"> <div class="mb-3"> <label for="adminEmail" class="form-label">Email</label> <input type="email" class="form-control" id="adminEmail" required> </div> <div class="mb-3"> <label for="adminPassword" class="form-label">Password</label> <input type="password" class="form-control" id="adminPassword" required> </div> <div id="adminLoginStatus" class="mt-3"></div> <div class="d-grid"> <button type="submit" class="btn btn-primary">Login</button> </div> </form> </div> </div> </div>
+        </div>
+    </div>
+
+    <!-- Main Admin Panel Area -->
+    <div id="admin-main-area" style="display: none;">
+        <header class="app-header">
+            <div class="header-left">
+                <button class="menu-toggle-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <img src="https://via.placeholder.com/35/1E293B/94A3B8?text=L" alt="Logo" class="header-logo" id="adminHeaderLogo" style="display:none;">
+                <h1 class="header-title ms-1" id="adminPageTitle">Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <span class="admin-email-header" id="adminUserEmailShort"></span>
+                <button class="btn btn-sm btn-outline-danger" id="adminLogoutBtnHeader"><i class="bi bi-box-arrow-right"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="adminSidebarLabel">Admin Menu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="nav flex-column">
+                     <li class="nav-item"> <a class="nav-link active" href="#" data-section="dashboard-section"><i class="bi bi-speedometer2"></i> Dashboard</a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="games-section"><i class="bi bi-controller"></i> Games</a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="promotions-section"><i class="bi bi-images"></i> Promotions</a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="tournaments-section"><i class="bi bi-trophy"></i> Tournaments</a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="users-section"><i class="bi bi-people"></i> Users</a> </li>
+                     <li class="nav-item"> <a class="nav-link" href="#" data-section="transactions-section"><i class="bi bi-receipt"></i> Transactions</a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="withdrawals-section"><i class="bi bi-cash-coin"></i> Withdrawals <span class="badge bg-danger ms-1" id="pendingWithdrawalCountBadge" style="display: none;">0</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" href="#" data-section="settings-section"><i class="bi bi-gear"></i> Settings</a> </li>
+                </ul>
+                <div class="mt-auto p-3 border-top border-secondary">
+                     <button class="btn btn-warning btn-sm w-100 mb-2" id="addDemoDataBtn"><i class="bi bi-database-add"></i> Add Demo Data</button>
+                     <small class="text-muted d-block text-center">Adds sample data if DB is empty.</small>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content" id="adminMainContent">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section active">
+                <h2>Dashboard Overview</h2>
+                <div class="row">
+                    <!-- Row 1 -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-primary shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Users</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statTotalUsers">--</p>
+                                <i class="bi bi-people-fill dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-info shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Active/Upcoming Tournaments</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statActiveTournaments">--</p>
+                                <i class="bi bi-trophy-fill dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-warning shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Pending Withdrawals</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statPendingWithdrawals">--</p>
+                                <i class="bi bi-hourglass-split dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-success shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Completed Withdrawals</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statCompletedWithdrawals">--</p>
+                                <i class="bi bi-check-circle-fill dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Row 2 -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-dark shadow-sm h-100"> <!-- Changed color -->
+                            <div class="card-body">
+                                <h5 class="card-title">Rejected Withdrawals</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statRejectedWithdrawals">--</p>
+                                <i class="bi bi-x-octagon-fill dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-secondary shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Games</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statTotalGames">--</p>
+                                <i class="bi bi-controller dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-secondary shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Promotions</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statTotalPromotions">--</p>
+                                <i class="bi bi-images dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-bg-secondary shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Finished Tournaments</h5>
+                                <p class="card-text fs-3 fw-bold mb-0" id="statFinishedTournaments">--</p>
+                                <i class="bi bi-flag-fill dash-card-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="dashboardStatus"></div> <!-- For general dashboard status messages -->
+            </section>
+
+            <!-- Games Section -->
+            <section id="games-section" class="section">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h2>Manage Games</h2>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#gameModal" id="addNewGameBtn"><i class="bi bi-plus-circle"></i> Add Game</button>
+                </div>
+                 <div id="gamesStatus" class="mb-3"></div> <!-- Status for actions etc. -->
+                <div class="table-responsive card">
+                    <table class="table table-dark table-hover mb-0">
+                        <thead> <tr><th>Image</th><th>Name</th><th>Game ID</th><th>Actions</th></tr> </thead>
+                        <tbody id="gamesTableBody"> <!-- Placeholder Rows -->
+                            <tr class="loading-placeholder"><td colspan="4"><div class="placeholder w-100 py-3"></div></td></tr>
+                            <tr class="loading-placeholder"><td colspan="4"><div c
